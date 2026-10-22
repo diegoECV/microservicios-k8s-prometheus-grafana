@@ -1,0 +1,238 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Salud de la Infraestructura & Microservicios",
+      "type": "row"
+    },
+    {
+      "id": 1,
+      "title": "Estado de Salud (UP / DOWN)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN (CAÍDO)", "color": "red" }, "1": { "text": "UP (SALUDABLE)", "color": "green" } } }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false }
+      },
+      "targets": [
+        {
+          "expr": "up{job=~\"course-service|enrollment-service\"}",
+          "legendFormat": "{{job}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Tasa de Peticiones HTTP (Req/s)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 16, "x": 8, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "expr": "rate(course_requests_total[1m])",
+          "legendFormat": "Course Service - Peticiones",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(enrollment_requests_total[1m])",
+          "legendFormat": "Enrollment Service - Peticiones",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "id": 200,
+      "title": "Rendimiento, Latencia & Simulación de Fallos",
+      "type": "row"
+    },
+    {
+      "id": 3,
+      "title": "Latencia Promedio de Operaciones (Segundos)",
+      "type": "timeseries",
+      "gridPos": { "h": 7, "w": 14, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(enrollment_processing_duration_seconds_sum[1m]) / (rate(enrollment_processing_duration_seconds_count[1m]) > 0)",
+          "legendFormat": "Latencia Promedio Enrollment (B)",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(course_operation_duration_seconds_sum[1m]) / (rate(course_operation_duration_seconds_count[1m]) > 0)",
+          "legendFormat": "Latencia Promedio Cursos (A)",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Delay Artificial Inyectado en course-service",
+      "type": "stat",
+      "gridPos": { "h": 7, "w": 10, "x": 14, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "#EAB839", "value": 1000 },
+              { "color": "red", "value": 2500 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "expr": "course_artificial_delay_ms",
+          "legendFormat": "Delay (ms)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "id": 300,
+      "title": "Métricas de Negocio: Cursos & Matrículas",
+      "type": "row"
+    },
+    {
+      "id": 5,
+      "title": "Vacantes Disponibles en Catálogo (Negocio)",
+      "type": "gauge",
+      "gridPos": { "h": 7, "w": 8, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "green", "value": 20 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "course_available_seats_gauge",
+          "legendFormat": "Total Vacantes Disponibles",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Matrículas Exitosas vs Fallidas / Timeouts (Negocio)",
+      "type": "timeseries",
+      "gridPos": { "h": 7, "w": 16, "x": 8, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "stacking": { "mode": "normal" }
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(enrollment_success_total[1m])",
+          "legendFormat": "Exitosas (OK)",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(enrollment_failures_total[1m])",
+          "legendFormat": "Fallidas / Rechazadas",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(enrollment_timeouts_total[1m])",
+          "legendFormat": "Timeouts por Servicio A",
+          "refId": "C"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["kubernetes", "spring-boot", "valle-grande", "observability"],
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m"]
+  },
+  "timezone": "browser",
+  "title": "Valle Grande - Observabilidad de Microservicios",
+  "uid": "valle-grande-microservices",
+  "version": 1
+}
