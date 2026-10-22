@@ -1,0 +1,39 @@
+# Configuración personalizada para el Helm chart kube-prometheus-stack
+# Valle Grande - Monitoreo Kubernetes
+
+grafana:
+  enabled: true
+  adminPassword: "AdminPassword2026!"
+  service:
+    type: NodePort
+    nodePort: 31000
+
+prometheus:
+  enabled: true
+  prometheusSpec:
+    # serviceMonitorSelectorNilUsesHelmValues: false y selector vacío ({})
+    # permiten a Prometheus descubrir y raspar ServiceMonitors de CUALQUIER namespace.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector: {}
+    ruleSelectorNilUsesHelmValues: false
+    ruleSelector: {}
+    scrapeInterval: "5s"
+    evaluationInterval: "5s"
+  service:
+    type: NodePort
+    nodePort: 30090
+
+alertmanager:
+  enabled: true
+  service:
+    type: NodePort
+    nodePort: 30903
+
+# Desactivar componentes que consumen exceso de memoria en clústeres locales pequeños si no son indispensables
+nodeExporter:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true

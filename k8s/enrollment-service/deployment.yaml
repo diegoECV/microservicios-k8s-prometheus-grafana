@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: enrollment-service
+  namespace: valle-grande
+  labels:
+    app: enrollment-service
+    service: enrollment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: enrollment-service
+  template:
+    metadata:
+      labels:
+        app: enrollment-service
+        service: enrollment-service
+    spec:
+      containers:
+        - name: enrollment-service
+          image: enrollment-service:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8082
+          env:
+            - name: SERVER_PORT
+              value: "8082"
+            - name: COURSE_SERVICE_URL
+              value: "http://course-service.valle-grande.svc.cluster.local:8081"
+            - name: COURSE_TIMEOUT_MS
+              value: "2500"
+            - name: SIMULATE_CRASH
+              value: "false"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8082
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8082
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2

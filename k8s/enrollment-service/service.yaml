@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: enrollment-service
+  namespace: valle-grande
+  labels:
+    app: enrollment-service
+    service: enrollment-service
+spec:
+  type: NodePort
+  selector:
+    app: enrollment-service
+  ports:
+    - name: http
+      port: 8082
+      targetPort: 8082
+      nodePort: 30082

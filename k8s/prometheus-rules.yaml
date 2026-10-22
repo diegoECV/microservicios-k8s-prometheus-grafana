@@ -1,0 +1,67 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: valle-grande-alerts
+  namespace: valle-grande
+  labels:
+    app: valle-grande
+    role: alert-rules
+    release: prometheus-stack
+spec:
+  groups:
+    - name: valle-grande.rules
+      rules:
+        # Alerta 1: Servicio A Caído
+        - alert: CourseServiceDown
+          expr: up{job="course-service"} == 0
+          for: 15s
+          labels:
+            severity: critical
+            service: course-service
+          annotations:
+            summary: "Microservicio course-service caído"
+            description: "El microservicio course-service en el namespace valle-grande no responde al scraping de Prometheus. Posible pod en CrashLoopBackOff o fallo de red."
+
+        # Alerta 2: Servicio B Caído
+        - alert: EnrollmentServiceDown
+          expr: up{job="enrollment-service"} == 0
+          for: 15s
+          labels:
+            severity: critical
+            service: enrollment-service
+          annotations:
+            summary: "Microservicio enrollment-service caído"
+            description: "El microservicio enrollment-service en el namespace valle-grande no se encuentra en estado UP."
+
+        # Alerta 3 (Negocio): Tasa Crítica de Matrículas Fallidas
+        - alert: HighEnrollmentFailuresRate
+          expr: rate(enrollment_failures_total[1m]) > 0.05
+          for: 20s
+          labels:
+            severity: warning
+            service: enrollment-service
+          annotations:
+            summary: "Tasa anormal de fallos en matrículas de estudiantes"
+            description: "La tasa de fallos de matrícula supera el umbral tolerable (> 0.05 fallos/seg). Probable causa: timeouts al consultar Servicio A o agotamiento de cupos."
+
+        # Alerta 4 (Negocio): Vacantes Críticamente Bajas
+        - alert: CourseSeatsExhaustedCritical
+          expr: course_available_seats_gauge <= 5
+          for: 15s
+          labels:
+            severity: warning
+            service: course-service
+          annotations:
+            summary: "Inventario de vacantes de cursos críticamente bajo"
+            description: "El total de vacantes disponibles en el catálogo de cursos es menor o igual a 5. Se requiere aperturar nuevos cupos para evitar pérdida de conversiones."
+
+        # Alerta 5 (Técnica): Latencia Elevada en la Cadena de Servicios
+        - alert: HighInterServiceLatency
+          expr: rate(enrollment_processing_duration_seconds_sum[1m]) / (rate(enrollment_processing_duration_seconds_count[1m]) > 0) > 2
+          for: 20s
+          labels:
+            severity: warning
+            service: enrollment-service
+          annotations:
+            summary: "Degradación de rendimiento inter-servicio"
+            description: "La latencia promedio al procesar matrículas supera los 2 segundos debido a lentitud o delays introducidos en course-service."
