@@ -1,0 +1,32 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: enrollment-service
+
+management:
+  endpoints:
+    web:
+      base-path: /
+      path-mapping:
+        prometheus: metrics
+      exposure:
+        include: "health,info,metrics,prometheus"
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: enrollment-service
+      service: enrollment-service
+
+services:
+  course-service:
+    url: ${COURSE_SERVICE_URL:http://localhost:8081}
+    timeout-ms: ${COURSE_TIMEOUT_MS:2500}
+
+simulation:
+  crash: ${SIMULATE_CRASH:false}

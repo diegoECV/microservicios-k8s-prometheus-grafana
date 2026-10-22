@@ -1,0 +1,28 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: course-service
+
+management:
+  endpoints:
+    web:
+      base-path: /
+      path-mapping:
+        prometheus: metrics
+      exposure:
+        include: "health,info,metrics,prometheus"
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: course-service
+      service: course-service
+
+simulation:
+  artificial-delay-ms: ${ARTIFICIAL_DELAY_MS:0}
+  crash: ${SIMULATE_CRASH:false}
