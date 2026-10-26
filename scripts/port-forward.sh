@@ -11,16 +11,20 @@ pkill -f "kubectl port-forward" 2>/dev/null || true
 sleep 1
 
 # 1. Grafana -> localhost:3000
-nohup kubectl port-forward svc/prometheus-stack-grafana -n monitoring 3000:80 </dev/null >/tmp/pf-grafana.log 2>&1 &
+setsid kubectl port-forward svc/prometheus-stack-grafana -n monitoring 3000:80 </dev/null >/tmp/pf-grafana.log 2>&1 &
+disown
 
 # 2. Prometheus -> localhost:9090
-nohup kubectl port-forward svc/prometheus-stack-kube-prom-prometheus -n monitoring 9090:9090 </dev/null >/tmp/pf-prom.log 2>&1 &
+setsid kubectl port-forward svc/prometheus-stack-kube-prom-prometheus -n monitoring 9090:9090 </dev/null >/tmp/pf-prom.log 2>&1 &
+disown
 
 # 3. Course Service -> localhost:8081
-nohup kubectl port-forward svc/course-service -n valle-grande 8081:8081 </dev/null >/tmp/pf-course.log 2>&1 &
+setsid kubectl port-forward svc/course-service -n valle-grande 8081:8081 </dev/null >/tmp/pf-course.log 2>&1 &
+disown
 
 # 4. Enrollment Service -> localhost:8082
-nohup kubectl port-forward svc/enrollment-service -n valle-grande 8082:8082 </dev/null >/tmp/pf-enroll.log 2>&1 &
+setsid kubectl port-forward svc/enrollment-service -n valle-grande 8082:8082 </dev/null >/tmp/pf-enroll.log 2>&1 &
+disown
 
 sleep 2
 

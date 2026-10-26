@@ -160,6 +160,9 @@ up{job=~"course-service|enrollment-service"}
   ```
 * **Lección técnica:** Demuestra la importancia de los *liveness probes* para aislar fallos, la diferencia con el *readiness probe*, y cómo las alertas automáticas en Prometheus permiten detectar caídas de microservicios antes de que los usuarios reporten la indisponibilidad total.
 
+* **Evidencia visual:**
+  ![Casuística 1 - Servicio Caído](img/casuistica-1-crashloop.png)
+
 ---
 
 ### 🟡 Casuística 2 — El Servicio Lento (Obligatoria)
@@ -168,8 +171,8 @@ up{job=~"course-service|enrollment-service"}
 * **Síntoma:** Los usuarios que intentan matricularse experimentan lentitud y reciben una respuesta HTTP 504 (*Gateway Timeout*) con mensaje controlado.
 * **Activación:**
   ```bash
-  # Activar retardo de 4000ms vía endpoint administrativo o variable de entorno:
-  curl -X POST http://$(minikube ip):30081/api/courses/admin/delay \
+  # Activar retardo de 4000ms vía endpoint administrativo:
+  curl -X POST http://localhost:8081/api/courses/admin/delay \
        -H "Content-Type: application/json" -d '{"delayMs": 4000}'
 
   # Generar tráfico hacia enrollment-service para provocar los timeouts:
@@ -182,10 +185,13 @@ up{job=~"course-service|enrollment-service"}
 * **Resolución:**
   ```bash
   # Restaurar el delay artificial a 0 ms:
-  curl -X POST http://$(minikube ip):30081/api/courses/admin/delay \
+  curl -X POST http://localhost:8081/api/courses/admin/delay \
        -H "Content-Type: application/json" -d '{"delayMs": 0}'
   ```
 * **Lección técnica:** En arquitecturas de microservicios, la latencia es transitiva: la lentitud en un servicio de backend degrada en cascada a todos los servicios upstream. Sin observabilidad con métricas Gauge de latencia y Timers en ambos lados, es imposible aislar con certeza qué servicio es el causante de la degradación.
+
+* **Evidencia visual:**
+  ![Casuística 2 - Degradación por Timeout](img/casuistica-2-timeout.png)
 
 ---
 
@@ -205,30 +211,37 @@ up{job=~"course-service|enrollment-service"}
 * **Resolución:**
   ```bash
   # Crear un nuevo curso o ampliar el inventario de cursos disponibles:
-  curl -X POST http://$(minikube ip):30081/api/courses \
+  curl -X POST http://localhost:8081/api/courses \
        -H "Content-Type: application/json" \
        -d '{"id":"CRS-005","title":"Arquitectura Cloud Native Avanzada","instructor":"Ing. Especialista","category":"DevOps","availableSeats":30,"totalSeats":30,"price":200.0}'
   ```
 * **Lección técnica:** El monitoreo no debe limitarse a la infraestructura técnica (CPU, RAM, HTTP 500); las métricas de dominio de negocio son indispensables para anticipar pérdidas comerciales y tomar acciones operativas oportunas (ej. reapertura de cupos).
+
+* **Evidencia visual:**
+  ![Casuística 3 - Agotamiento de Vacantes](img/casuistica-3-exhaust.png)
 
 ---
 
 ## Parte D — Evidencias del Sistema
 
 ### 1. Captura de `/targets` en Prometheus (ambos servicios en estado UP)
-> *(Insertar aquí captura de pantalla de `http://<MINIKUBE_IP>:30090/targets` mostrando los jobs `course-service` y `enrollment-service` con estado 1/1 UP)*
+![Prometheus Targets UP](img/01-prometheus-targets.png)
+> *Targets activos en `http://localhost:9090/targets` mostrando `course-service` y `enrollment-service` en estado 1/1 UP.*
 
 ---
 
 ### 2. Captura del Dashboard de Grafana con los Seis Paneles Funcionando
-> *(Insertar aquí captura de pantalla del dashboard importado en Grafana con los 6 paneles visualizando métricas en tiempo real)*
+![Dashboard de Grafana](img/02-grafana-dashboard.png)
+> *Dashboard 'Valle Grande - Observabilidad de Microservicios' en `http://localhost:3000` con sus 6 paneles visualizando métricas en tiempo real.*
 
 ---
 
 ### 3. Captura de `kubectl get pods` mostrando todos los pods en Running
-> *(Insertar aquí captura de la terminal ejecutando `kubectl get pods -n valle-grande -o wide` y `kubectl get pods -n monitoring`)*
+![Kubectl Get Pods Running](img/03-kubectl-pods.png)
+> *Salida de `kubectl get pods -n valle-grande -o wide` y `kubectl get pods -n monitoring` con todos los pods en estado Running.*
 
 ---
 
 ### 4. Captura de al menos una alerta en estado FIRING durante alguna casuística
-> *(Insertar aquí captura de la pestaña Alerts en Prometheus `http://<MINIKUBE_IP>:30090/alerts` mostrando la alerta `CourseServiceDown` o `HighEnrollmentFailuresRate` en estado **FIRING**)*
+![Alerta FIRING en Prometheus](img/04-alert-firing.png)
+> *Pestaña Alerts en Prometheus `http://localhost:9090/alerts` mostrando alertas en estado **FIRING** (ej. `CourseServiceDown` o `CourseSeatsExhaustedCritical`).*
